@@ -1,5 +1,5 @@
 ########### Aidan Moore XBox Control of Trinamic Motor Drivers
-# April 4th 2020
+# April 5th 2020
 #This version is for dual 5072 driving the Leitz stage
 #
 # With Raspberry Pi 4 4GB
