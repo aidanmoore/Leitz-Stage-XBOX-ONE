@@ -44,7 +44,7 @@ pi.set_mode(motorport1, pigpio.OUTPUT) # Set driver chip #1 port to output
 pi.set_mode(motorport2, pigpio.OUTPUT) # Set driver chip #2 port to output
 pi.write(motorport1, 1) # Set motor port initally to 1 to disable
 pi.write(motorport2, 1) # Set motor port initally to 1 to disable
-
+#pi.write (20, 1) # Write 1 to camera port
 
 
 ################################################### For TMC5072 #1 ######################################################
@@ -145,6 +145,12 @@ mot2.zdenergize() # Denergize Motor 1 TMC5072 Chip #1 disabled due to jerk
 
 
 async def main():
+    # Stacking Camera & Strobe Trigger Parameters
+    cameraport = 20 # Camera GPIO trigger port number 20 on Raspberry Pi 3
+    strobeport = 16 # Strobe GPIO trigger port number 16 on Raspberry
+    ledcameraport = 26 # Camera LED (Blue) GPIO trigger port number 26 on Raspberry Pi 3
+    ledstrobeport = 19 # Strobe LED (Red or White) GPIO trigger port number 19 on Raspberry Pi 3
+
     
     XFLAG = 0 # 1 = deenergized and target reached 0 = target not reached
     YFLAG = 0 # 1 = deenergized and target reached 0 = target not reached
@@ -198,20 +204,39 @@ async def main():
             remote_control.button_x = False
             ZSCALE = 0.5 #fine mode
             print ("Super Fine Mode")           
-        if remote_control.button_y: # turn on light rumble effect
+        if remote_control.button_y:
             remote_control.button_y = False
             ZSCALE = 2 #fine mode
             print ("Fine Mode")
         if remote_control.button_b: # play once strong rumble effect
             remote_control.button_b = False
-            ZSCALE = 10 #coarse mode
+            ZSCALE = 30 #coarse mode
             print ("Coarse Mode")
             remote_control.rumble_effect = 2
-        if remote_control.button_a: # play once strong rumble effect
+        if remote_control.button_a: #take picture
+            pi.write (cameraport, 1) # Write 1 to camera port
             remote_control.button_a = False
-            ZSCALE = 30 #super coarse mode
-            print (" Super Coarse Mode")
-            remote_control.rumble_effect = 2
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            pi.write (cameraport, 1) # Write 1 to camera port
+            # Camera and Strobe Trigger, Image Capture    
+            pi.write (ledcameraport, 1) # Write 1 to LED camera port
+            pi.write (ledcameraport, 0) # Set LED camera port back to 0
+            print (" Snap ")     
+            pi.write (cameraport, 0) # Set camera port back to 0                     
 
         await asyncio.sleep(0)       
 
