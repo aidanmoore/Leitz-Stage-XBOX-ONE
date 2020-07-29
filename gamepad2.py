@@ -91,9 +91,9 @@ class gamepad():
                         else:
                             self.joystick_right_y = 0
                             
-                    elif event.code == 5: # right trigger
-                        self.trigger_right = event.value 
-                    elif event.code == 2: # left trigger
+                    elif event.code == 5: # right trigger (0-1023)
+                        self.trigger_right = event.value   
+                    elif event.code == 2: # left trigger  (0-1023)
                         self.trigger_left = event.value
                     elif event.code == 16: # DPAD X+ X- (1,0,-1)
                         self.dpad_x = event.value

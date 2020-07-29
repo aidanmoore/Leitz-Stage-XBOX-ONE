@@ -46,12 +46,12 @@ pi.set_mode(motorport1, pigpio.OUTPUT) # Set driver chip #1 port to output
 pi.set_mode(motorport2, pigpio.OUTPUT) # Set driver chip #2 port to output
 pi.write(motorport1, 1) # Set motor port initally to 1 to disable
 pi.write(motorport2, 1) # Set motor port initally to 1 to disable
-#pi.write (20, 1) # Write 1 to camera port
+
 pi.set_mode(polarizer_AIN1, pigpio.OUTPUT) # Set polarizer port to output
 pi.set_mode(polarizer_AIN2, pigpio.OUTPUT) # Set polarizer  port to output
-pi.set_PWM_frequency(polarizer_AIN1,100)
+pi.set_PWM_frequency(polarizer_AIN1,60)
 pi.set_PWM_dutycycle(polarizer_AIN1,0)
-pi.set_PWM_frequency(polarizer_AIN2,100)
+pi.set_PWM_frequency(polarizer_AIN2,60)
 pi.set_PWM_dutycycle(polarizer_AIN2,0)
 
 ################################################### For TMC5072 #1 ######################################################
@@ -170,8 +170,8 @@ try:
             XNOW = round(remote_control.joystick_left_x,4)
             YNOW = round(remote_control.joystick_left_y,4)
             ZNOW = round(remote_control.joystick_right_x,4)
-            POLCW = int((remote_control.trigger_right)*64)
-            POLCCW = int((remote_control.trigger_left)*64)
+            POLCW = round((remote_control.trigger_right)/32)  #Get scaled PWM Data for Polarizer CW motor direction range 0 -32
+            POLCCW = round((remote_control.trigger_left)/32)  #Get scaled PWM Data for Polarizer CCW motor direction range 0 -32
             
             if  abs(XNOW) >0.1:  # if the Joystick is not in deadband  
                 XPOS = XPOS + 20 * XNOW #Change the target
@@ -185,16 +185,20 @@ try:
                 ZPOS = ZPOS + ZSCALE * ZNOW
                 mot2.zgotonowait(ZPOS) # Write position count to Trinamic 5072 Motor 3
                 ZFLAG = 1
-            if  POLCW > 0.05:     #setup to move CW  
-                   pi.set_PWM_dutycycle(polarizer_AIN1,POLCW)
-                   pi.set_PWM_dutycycle(polarizer_AIN2,0)
-            elif POLCCW < 0.05 :
-                   pi.set_PWM_dutycycle(polarizer_AIN1,0) 
-            if   POLCCW > 0.05:        
-                   pi.set_PWM_dutycycle(polarizer_AIN2,POLCCW)
-                   pi.set_PWM_dutycycle(polarizer_AIN1,0)
-            elif POLCW < 0.05 :
-                   pi.set_PWM_dutycycle(polarizer_AIN2,0)
+                
+            if  POLCW > 5:     #setup to move CW
+                 #print (' Clockwise ', POLCW)
+                 pi.set_PWM_dutycycle(polarizer_AIN1,POLCW)
+#                pi.set_PWM_dutycycle(polarizer_AIN2,0)
+            elif POLCCW < 5 :
+                 pi.set_PWM_dutycycle(polarizer_AIN1,0)
+                
+            if   POLCCW > 5:
+                 #print (' Counter-clockwise ', POLCCW)
+                 pi.set_PWM_dutycycle(polarizer_AIN2,POLCCW)
+                 pi.set_PWM_dutycycle(polarizer_AIN1,0)
+            elif POLCW < 5 :
+                 pi.set_PWM_dutycycle(polarizer_AIN2,0)
 
     #
     # Now test if the motors have arrived at its target position. If it has, deenergize the motor.
