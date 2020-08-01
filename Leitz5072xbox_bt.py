@@ -1,6 +1,7 @@
 ########### Aidan Moore XBox Control of Trinamic Motor Drivers
-# July 28th  2020
+# Aug 1st  2020
 # This version is for dual 5072 driving the Leitz stage and the Polarizer motor
+# With twos compliment Z axis readout
 #
 # With Raspberry Pi 4 4GB
 # Motor Supply 12 Volts or Greater
@@ -54,6 +55,12 @@ pi.set_PWM_dutycycle(polarizer_AIN1,0)
 pi.set_PWM_frequency(polarizer_AIN2,60)
 pi.set_PWM_dutycycle(polarizer_AIN2,0)
 
+################################################### User functions ######################################################
+def twoscomp(inval):       #Convert 32 bit twos compliment register values to signed integer values
+    if inval > 2147483647:
+        inval = -(4294967295 - inval)
+    return inval
+
 ################################################### For TMC5072 #1 ######################################################
 
 # Number 1 Motor X (Purple Dot Motor #1 on PCB) and Rail Setup Parameters
@@ -91,7 +98,7 @@ y2vstop = 20 # Final stop velocity in pulses/sec, Note must be > than vstart!
 md1=trinamicDriver.TrinamicDriver(datarate=1000000, motordef=tmc5072regs.tmc5072, drvenpin=12, spiChannel=0) # Setup md for reading position
 mot1=chipdrive_5072_Dual_exp_A1.tmc5072(stepsPerRev=xmotorstep, vmax=xvmax, amax=xamax, a1=xa1, dmax=xdmax, d1=xd1, v1=xv1, vstart=xvstart, vstop=xvstop, v2max=y2vmax, a2max=y2amax, a21=y2a1, d2max=y2dmax, d21=y2d1, v21=y2v1, v2start=y2vstart, v2stop=y2vstop) # Activate Chip Drive for TMC5072 as mot1
 
-################################################### For TMC5160 #2 ######################################################
+################################################### For TMC5072 #2 ######################################################
 
 zmotorstep = 400 # Motor steps per rotation
 zvmax = 128000 # Maximum velocity count in rotation/sec vmax/motorstep/microstep
@@ -137,6 +144,8 @@ mot1.xdenergize() # Denergize Motor 1 TMC5072 Chip #1
 mot1.ydenergize2() # Denergize Motor 2 TMC5072 Chip #1
 # mot2.zdenergize() # Denergize Motor 1 TMC5072 Chip #1 disabled due to jerk
 
+
+
 ################################################### Main Routine ######################################################
 
 try:
@@ -151,14 +160,21 @@ try:
         XFLAG = 0 # 1 = deenergized and target reached 0 = target not reached
         YFLAG = 0 # 1 = deenergized and target reached 0 = target not reached
         ZFLAG = 0
-        XNOW = 0 # 1 = deenergized and target reached 0 = target not reached
-        YNOW = 0 # 1 = deenergized and target reached 0 = target not reached
+        XNOW = 0 # Current value of X motor joystick value
+        YNOW = 0 # Current value of Y motor joystick value
         ZNOW = 0
         POLCW = 0
         POLCCW = 0
+        
+        XOLD = 0
+        YOLD = 0
+        ZOLD = 0
+        ZTEMP = 0
+
         XPOS = md1.readInt('XACTUAL')
         YPOS = md1.readInt('X2ACTUAL')
         ZPOS = md2.readInt('XACTUAL')
+        print ('Starting Z postion ZPOS = ', ZPOS)
         ZSCALE = 2 #start in fine mode
         keep_going = True
     
@@ -169,7 +185,7 @@ try:
             # Read the Joystick values
             XNOW = round(remote_control.joystick_left_x,4)
             YNOW = round(remote_control.joystick_left_y,4)
-            ZNOW = round(remote_control.joystick_right_x,4)
+            ZNOW = remote_control.joystick_right_y
             POLCW = round((remote_control.trigger_right)/32)  #Get scaled PWM Data for Polarizer CW motor direction range 0 -32
             POLCCW = round((remote_control.trigger_left)/32)  #Get scaled PWM Data for Polarizer CCW motor direction range 0 -32
             
@@ -181,7 +197,8 @@ try:
                 YPOS = YPOS + 20 * YNOW
                 mot1.ygotonowait2(YPOS) # Write position count to Trinamic 5072 #1 Motor 2 (Green)
                 YFLAG = 1
-            if abs(ZNOW) > 0.1:
+            if abs(ZNOW) > 0.05:
+                ZOLD = ZTEMP
                 ZPOS = ZPOS + ZSCALE * ZNOW
                 mot2.zgotonowait(ZPOS) # Write position count to Trinamic 5072 Motor 3
                 ZFLAG = 1
@@ -206,15 +223,17 @@ try:
             if md1.readInt('XACTUAL') == md1.readInt('XTARGET') and XFLAG == 1 : # if the target is reached and the flag is set  
                 XFLAG = 0         # Clear the flag
                 mot1.xdenergize() # Denergize Motor 1 TMC5072 Chip #1
-                print (' X target reached ')   
+                print (' X target reached ',md1.readInt('XACTUAL')  )   
             if md1.readInt('X2ACTUAL') == md1.readInt('X2TARGET') and YFLAG == 1 : # if the target is reached and the flag is set  
                 YFLAG = 0         # Clear the flag
                 mot1.ydenergize2() # Denergize Motor 2 TMC5072 Chip #1        
-                print (' Y target reached ')
+                print (' Y target reached ', md1.readInt('X2ACTUAL'))
             if md2.readInt('XACTUAL') == md2.readInt('XTARGET') and ZFLAG == 1 : # if the target is reached and the flag is set  
                 ZFLAG = 0         # Clear the flag
-                # mot2.zdenergize() # Denergize Motor 1 TMC5072 Chip #1 But getting jerk so disabled       
-                print (' Z target reached ')
+                # mot2.zdenergize() # Denergize Motor 1 TMC5072 Chip #1 But getting jerk so disabled
+                ZTEMP = md2.readInt('XACTUAL')
+                ZTEMP = twoscomp(ZTEMP)
+                print (' Just moved from ', ZOLD, 'to ', ZTEMP, ' a distance of ', ZTEMP - ZOLD )
 
     #
     # Buttons

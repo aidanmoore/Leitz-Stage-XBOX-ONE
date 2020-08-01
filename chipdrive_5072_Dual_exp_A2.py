@@ -1,44 +1,5 @@
 #!/usr/bin/python3
 """
-***********************    Modified by Mike Wyatt for Dual TMC5072 Controller, Two TMC5072 Chips for Quad Motor Control Exp Version A1 & A2, June 2 2019    *************************
-This version is for TMC5072 Chip #2
-Driver for a trinamic tmc5072-bob on a raspberry pi using SPI based from pootle.
-https://github.com/pootle/tripipy
-
-
-Wiring from Pi to TMC5072 #1      From TMC5072 #1
-2          to Vcc_IO                GND      to Supply Gnd  
-Gnd        to GND                   A1       to Motor (Purple Dot) 1 Grn 
-           ENC1A                    A2       to Motor (Purple Dot) 1 Blk
-           ENC1B                    B1       to Motor (Purple Dot) 1 Blu 
-           ENC1N                    B2       to Motor (Purple Dot) 1 Red
-8(CS0)     to CSN                   GND      to Supply Gnd  
-11(SCLK)   to SCK                   VS       to Motor Supply    
-10(MOSI)   to SDI                   VS       to Motor Supply
-9(MISO)    to SDO                   GND      to Supply Gnd 
-4          to CLK16                 B2       to Motor (Green Dot) 2 Red
-12         to ENN                   B1       to Motor (Green Dot) 2 Blu
-           ENC2A                    A1       to Motor (Green Dot) 2 Grn
-           ENC2B                    A2       to Motor (Green Dot) 2 Blk
-           ENC2N                    GND      to Supply Gnd
-
-Wiring from Pi to TMC5072 #2      From TMC5072 #2
-2          to Vcc_IO                GND      to Supply Gnd  
-Gnd        to GND                   A1       to Motor (Purple Dot) 1 Grn 
-           ENC1A                    A2       to Motor (Purple Dot) 1 Blk
-           ENC1B                    B1       to Motor (Purple Dot) 1 Blu 
-           ENC1N                    B2       to Motor (Purple Dot) 1 Red
-7(CS1)     to CSN                   GND      to Supply Gnd  
-11(SCLK)   to SCK                   VS       to Motor Supply    
-10(MOSI)   to SDI                   VS       to Motor Supply
-9(MISO)    to SDO                   GND      to Supply Gnd 
-4          to CLK16                 B2       to Motor (Green Dot) 2 Red
-21         to ENN                   B1       to Motor (Green Dot) 2 Blu
-           ENC2A                    A1       to Motor (Green Dot) 2 Grn
-           ENC2B                    A2       to Motor (Green Dot) 2 Blk
-           ENC2N                    GND      to Supply Gnd
-           
-
 
 
         TMC5072 is Motor #1 (Purple Dot), TMC5072 is Motor #2 (Green Dot),TMC5072 is Motor #3 (Blue Dot), TMC5072 is Motor #4 (Red Dot)
